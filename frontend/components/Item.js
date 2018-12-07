@@ -17,16 +17,16 @@ class Item extends Component {
     return (
       <ItemStyles>
         {item.image && <img src={item.image} alt={item.title} />}
-        <Title>
-          <Link
-            href={{
-              pathname: "/item",
-              query: { id: item.id }
-            }}
-          >
+        <Link
+          href={{
+            pathname: "/item",
+            query: { id: item.id }
+          }}
+        >
+          <Title>
             <a>{item.title}</a>
-          </Link>
-        </Title>
+          </Title>
+        </Link>
         <PriceTag>{formatMoney(item.price)}</PriceTag>
         <p>{item.description}</p>
         <div className="buttonList">
@@ -34,7 +34,7 @@ class Item extends Component {
             <a>Edit ✏️ </a>
           </Link>
           <button>Add to Card</button>
-          <DeleteItem>Delete this Item</DeleteItem>
+          <DeleteItem id={item.id}>Delete this Item</DeleteItem>
         </div>
       </ItemStyles>
     );

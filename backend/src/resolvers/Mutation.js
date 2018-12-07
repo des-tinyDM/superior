@@ -21,6 +21,15 @@ const Mutations = {
       info
     );
     return item;
+  },
+  async deleteItem(parent, args, ctx, info) {
+    const where = { id: args.id };
+    // Find item
+    const item = await ctx.db.query.item({ where }, `{ id title}`);
+    // Check if own item or have permissions
+
+    // Delete it
+    return ctx.db.mutation.deleteItem({ where }, info);
   }
 };
 
