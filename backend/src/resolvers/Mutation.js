@@ -1,17 +1,30 @@
+const bcrypt = require("bcryptjs");
+const jwt = require("jsonwebtoken");
+
 const Mutations = {
   async createItem(parent, args, ctx, info) {
     // TODO: Check if they are logged in
-    const item = await ctx.db.mutation.createItem({ data: { ...args } }, info);
+
+    const item = await ctx.db.mutation.createItem(
+      {
+        data: {
+          ...args
+        }
+      },
+      info
+    );
+
     console.log(item);
+
     return item;
   },
-  async updateItem(parent, args, ctx, info) {
-    // Copy of the updates
+  updateItem(parent, args, ctx, info) {
+    // first take a copy of the updates
     const updates = { ...args };
-    // Remove ID from the update
+    // remove the ID from the updates
     delete updates.id;
-    // Run the update method
-    const item = await ctx.db.mutation.updateItem(
+    // run the update method
+    return ctx.db.mutation.updateItem(
       {
         data: updates,
         where: {
@@ -20,16 +33,62 @@ const Mutations = {
       },
       info
     );
-    return item;
   },
   async deleteItem(parent, args, ctx, info) {
     const where = { id: args.id };
-    // Find item
+    // 1. find the item
     const item = await ctx.db.query.item({ where }, `{ id title}`);
-    // Check if own item or have permissions
-
-    // Delete it
+    // 2. Check if they own that item, or have the permissions
+    // TODO
+    // 3. Delete it!
     return ctx.db.mutation.deleteItem({ where }, info);
+  },
+  async signup(parent, args, ctx, info) {
+    // lowercase their email
+    args.email = args.email.toLowerCase();
+    // hash their password
+    const password = await bcrypt.hash(args.password, 10);
+    // create the user in the database
+    const user = await ctx.db.mutation.createUser(
+      {
+        data: {
+          ...args,
+          password,
+          permissions: { set: ["USER"] }
+        }
+      },
+      info
+    );
+    // create the JWT token for them
+    const token = jwt.sign({ userId: user.id }, process.env.APP_SECRET);
+    // We set the jwt as a cookie on the response
+    ctx.response.cookie("token", token, {
+      httpOnly: true,
+      maxAge: 1000 * 60 * 60 * 24 * 365 // 1 year cookie
+    });
+    // Finalllllly we return the user to the browser
+    return user;
+  },
+  async signin(parent, { email, password }, ctx, info) {
+    // check if user with email
+    const user = await ctx.db.query.user({ where: { email } });
+    if (!user) {
+      throw new Error(`No account found with email: ${email}`);
+    }
+    //check if password correct
+    const valid = await bcrypt.compare(password, user.password);
+    if (!valid) {
+      throw new Error("Password invalid.");
+    }
+    // generate the JWT
+    const token = jwt.sign({ userId: user.id }, process.env.APP_SECRET);
+    // We set the jwt as a cookie on the response
+    ctx.response.cookie("token", token, {
+      httpOnly: true,
+      maxAge: 1000 * 60 * 60 * 24 * 365 // 1 year cookie
+    });
+    //set cookie with token
+    return user;
   }
 };
 
