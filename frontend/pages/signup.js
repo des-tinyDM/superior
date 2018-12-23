@@ -1,7 +1,8 @@
 import Signup from "../components/Signup";
 import Signin from "../components/Signin";
-
 import styled from "styled-components";
+import { Mutation } from "react-apollo";
+import gql from "graphql-tag";
 
 const Columns = styled.div`
   display: grid;
