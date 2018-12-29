@@ -1,5 +1,6 @@
 import Signup from "../components/Signup";
 import Signin from "../components/Signin";
+import RequestReset from "../components/RequestReset";
 import styled from "styled-components";
 import { Mutation } from "react-apollo";
 import gql from "graphql-tag";
@@ -14,6 +15,7 @@ const SignupPage = props => (
   <Columns>
     <Signup />
     <Signin />
+    <RequestReset />
   </Columns>
 );
 
